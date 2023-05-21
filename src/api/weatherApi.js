@@ -5,7 +5,7 @@ import {
   weatherForDiagram,
 } from "../includes/chartWeather";
 
-const API_KEY = "ce999dda2c388582fbf4e78c0fb729f0";
+const API_KEY = "";
 const BASE_URL = "https://api.openweathermap.org/data/2.5";
 
 export async function searchCities(query) {
