@@ -1,30 +1,52 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
-</script>
-
 <template>
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
+  <div id="app" class="app">
+    <div class="app__container">
+      <nav class="nav">
+        <router-link class="nav__link" to="/">Home</router-link>
+        <router-link class="nav__link" to="/favorites">Favorites</router-link>
+      </nav>
+      <router-view></router-view>
+    </div>
   </div>
-  <HelloWorld msg="Vite + Vue" />
 </template>
 
-<style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+<script>
+import HomeView from "./views/HomeView.vue";
+
+export default {
+  components: {
+    HomeView,
+  },
+};
+</script>
+
+<style scoped lang="scss">
+.app {
+  &__container {
+    max-width: 1200px;
+    padding: 0 40px;
+    margin: 0 auto;
+
+    @include onMobile {
+      padding: 0 20px;
+    }
+  }
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
+.nav {
+  padding: 20px 10px;
+  border-bottom: 1px solid #c9c9c9;
+  margin-bottom: 40px;
+
+  &__link {
+    color: black;
+    padding: 5px 0;
+    text-decoration: none;
+    margin-right: 30px;
+
+    &:hover {
+      opacity: 0.8;
+      font-weight: 500;
+    }
+  }
 }
 </style>
