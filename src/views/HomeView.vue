@@ -207,8 +207,11 @@ export default {
 
   created() {
     const storedDefaultList = localStorage.getItem("defaultList");
+    let defaultList;
     if (storedDefaultList) {
-      const defaultList = JSON.parse(storedDefaultList);
+      defaultList = JSON.parse(storedDefaultList);
+    }
+    if (defaultList.length) {
       this.cardsData = defaultList;
       this.chips = defaultList.map((city) => {
         return {
