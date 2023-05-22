@@ -1,30 +1,42 @@
 <template>
   <div class="card">
-    <h2 class="card__title">{{ `${city.name}, ${city.sys.country} ` }}</h2>
-    <h3 class="card__subtitle">
+    <div class="card__title-wrapper">
+      <h2 class="card__title">
+        {{ `${city.city.name}, ${city.city.country} ` }}
+      </h2>
+      <img
+        @click.stop="addToFavorites(city)"
+        :src="`./src/assets/images/heart-${
+          isFavorite ? 'filled' : 'empty'
+        }.png`"
+        class="card__heart"
+        alt="heart icon"
+      />
+    </div>
+    <!-- <h3 class="card__subtitle">
       {{ city.weather.main
       }}<span
         >Wind {{ city.wind.speed.toFixed(0) }}km/h
         <span class="dot">•</span> Humidity {{ city.main.humidity }}%</span
       >
-    </h3>
+    </h3> -->
     <div class="card__temperature-wrapper">
       <div class="card__icon-part-wrapper">
         <img
           class="weather-icon"
-          :src="`https://openweathermap.org/img/wn/${city.weather[0].icon}@2x.png`"
+          :src="`https://openweathermap.org/img/wn/${city.list[0].weather[0].icon}@2x.png`"
           alt="weather icon"
         />
-        <p class="card__paragraph">
+        <!-- <p class="card__paragraph">
           Feels like: {{ city.main.feels_like.toFixed(0) }}°
-        </p>
-        <p class="card__paragraph">
+        </p> -->
+        <!-- <p class="card__paragraph">
           Min: {{ city.main.temp_min.toFixed(0) }}° <br />
           Max: {{ city.main.temp_max.toFixed(0) }}°
-        </p>
+        </p> -->
       </div>
 
-      <h1 class="card-temperature">{{ city.main.temp.toFixed(0) }}°</h1>
+      <h2 class="card__temperature">{{ averageNumber("main.temp") }}°</h2>
     </div>
     <div></div>
   </div>
@@ -37,6 +49,40 @@ export default {
     city: {
       type: Object,
       default: null,
+    },
+    isFavorite: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  methods: {
+    addToFavorites(card) {
+      this.$emit("add-favorite", card);
+    },
+    getPropertyValue(obj, propertyPath) {
+      const properties = propertyPath.split(".");
+      let value = obj;
+      for (const property of properties) {
+        value = value[property];
+      }
+      return value;
+    },
+    averageNumber(propertyPath) {
+      const values = this.filterListByToday.map((obj) =>
+        this.getPropertyValue(obj, propertyPath)
+      );
+      const averageValue =
+        values.reduce((sum, temp) => sum + temp, 0) / values.length;
+      return averageValue.toFixed(0);
+    },
+  },
+  computed: {
+    filterListByToday() {
+      const currentDate = new Date().toISOString().slice(0, 10);
+      const filterListByToday = this.city.list.filter((obj) =>
+        obj.dt_txt.includes(currentDate)
+      );
+      return filterListByToday;
     },
   },
 };
@@ -60,19 +106,35 @@ body {
   border-radius: 3px;
   background-color: #fff;
   box-shadow: 1px 2px 10px rgba(0, 0, 0, 0.2);
-  -webkit-animation: open 1s cubic-bezier(0.39, 0, 0.38, 1);
+  -webkit-animation: open 0.5s cubic-bezier(0.39, 0, 0.38, 1);
+  border: 1px solid transparent;
   cursor: pointer;
 
   &__active,
   &:hover {
-    box-shadow: 1px 2px 10px rgba(1, 185, 170, 0.534);
+    box-shadow: 1px 2px 10px rgb(50, 131, 131);
+    border: 1px solid rgba(48, 124, 124, 0.9);
+  }
+
+  &__title-wrapper {
+    display: flex;
+    justify-content: space-between;
   }
 
   &__title {
     font-weight: 300;
     font-size: 2.26em;
     margin: 0 0 10px;
-    -webkit-animation: open 1s cubic-bezier(0.39, 0, 0.38, 1);
+    -webkit-animation: open 0.5s cubic-bezier(0.39, 0, 0.38, 1);
+  }
+
+  &__heart {
+    max-width: 30px;
+    max-height: 30px;
+
+    &:hover {
+      scale: 1.1;
+    }
   }
 
   &__subtitle {
@@ -81,7 +143,7 @@ body {
     color: #777;
     font-weight: 400;
     font-size: 1em;
-    -webkit-animation: open 1s cubic-bezier(0.39, 0, 0.38, 1) 0.1s;
+    -webkit-animation: open 0.5s cubic-bezier(0.39, 0, 0.38, 1) 0.1s;
   }
 
   &__paragraph {
@@ -95,6 +157,15 @@ body {
     align-items: flex-start;
   }
 
+  &__temperature {
+    float: right;
+    color: #666;
+    font-weight: 300;
+    font-size: 5.5em;
+    line-height: 1.1;
+    margin: 0;
+    -webkit-animation: open 0.5s cubic-bezier(0.39, 0, 0.38, 1) 0.2s;
+  }
   &__icon-part-wrapper {
     display: flex;
     flex-direction: column;
@@ -119,16 +190,6 @@ h4 {
   position: relative;
 }
 
-h1 {
-  float: right;
-  color: #666;
-  font-weight: 300;
-  font-size: 5.5em;
-  line-height: 1.1;
-  margin: 0;
-  -webkit-animation: open 1s cubic-bezier(0.39, 0, 0.38, 1) 0.2s;
-}
-
 span {
   color: #999;
   font-weight: 300;
@@ -147,50 +208,7 @@ span span {
   width: 70px;
   height: 70px;
   margin-right: 15px;
-  -webkit-animation: open 1s cubic-bezier(0.39, 0, 0.38, 1) 0.2s;
-}
-
-table {
-  position: relative;
-  top: 10px;
-  width: 100%;
-  text-align: center;
-}
-
-tr:nth-child(1) td:nth-child(1),
-tr:nth-child(1) td:nth-child(2),
-tr:nth-child(1) td:nth-child(3),
-tr:nth-child(1) td:nth-child(4),
-tr:nth-child(1) td:nth-child(5) {
-  padding-bottom: 32px;
-  -webkit-animation: open 1s cubic-bezier(0.39, 0, 0.38, 1) 0.7s;
-}
-
-tr:nth-child(2) td:nth-child(1),
-tr:nth-child(2) td:nth-child(2),
-tr:nth-child(2) td:nth-child(3),
-tr:nth-child(2) td:nth-child(4),
-tr:nth-child(2) td:nth-child(5) {
-  padding-bottom: 7px;
-  -webkit-animation: open 1s cubic-bezier(0.39, 0, 0.38, 1) 0.9s;
-}
-
-tr:nth-child(3) td:nth-child(1),
-tr:nth-child(3) td:nth-child(2),
-tr:nth-child(3) td:nth-child(3),
-tr:nth-child(3) td:nth-child(4),
-tr:nth-child(3) td:nth-child(5) {
-  padding-bottom: 7px;
-  -webkit-animation: open 1s cubic-bezier(0.39, 0, 0.38, 1) 0.9s;
-}
-
-tr:nth-child(2),
-tr:nth-child(3) {
-  font-size: 0.9em;
-}
-
-tr:nth-child(3) {
-  color: #999;
+  -webkit-animation: open 0.5s cubic-bezier(0.39, 0, 0.38, 1) 0.2s;
 }
 
 @-webkit-keyframes open {

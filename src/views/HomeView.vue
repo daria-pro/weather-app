@@ -10,9 +10,21 @@
       @delete-chip="handleDeleteChip"
     />
   </div>
-  <div class="cards-list">
+
+  <div class="cards-list-wrapper">
+    <div class="period-links">
+      <p
+        class="period-link"
+        v-for="link in periodLinks"
+        :key="link"
+        :class="{ 'period-link-active': period === link }"
+        @click="togglePeriod"
+      >
+        {{ link }}
+      </p>
+    </div>
     <cards-list
-      :data="chips"
+      :data="cardsData"
       @chart-updated="handleChartUpdate"
       :cardSelected="cardSelected"
     />
@@ -55,6 +67,8 @@ export default {
       cardsData: cardsData,
       cardSelected: cardsData[0],
       updateChart: false,
+      periodLinks: ["Day", "Week"],
+      period: "Day",
     };
   },
   methods: {
@@ -74,12 +88,15 @@ export default {
       this.selectedValue = value;
       const cityName = this.selectedValue.name;
       const countryCode = this.selectedValue.sys.country;
+      if (this.period === "Day") {
+        const currentCityWeather = await fetchByCityCountry(
+          cityName,
+          countryCode
+        );
+        console.log("handleCitySelect fetchFore5", currentCityWeather);
+        this.cardsData.push(currentCityWeather);
+      }
       // fetchByCityCountry(cityName, countryCode);
-      const currentCityWeather = await fetchCurrentWeather(
-        cityName,
-        countryCode
-      );
-      this.cardsData.push(currentCityWeather);
     },
     handleCitiesFetch(newVal) {
       if (newVal && newVal.length) {
@@ -113,6 +130,9 @@ export default {
         return;
       }
     },
+    togglePeriod() {
+      return (this.period = this.period === "Day" ? "Week" : "Day");
+    },
   },
   created() {
     // this.fetchWeatherData();
@@ -124,9 +144,39 @@ export default {
 .input-wrapper {
   margin-bottom: 20px;
 }
-.cards-list {
+.cards-list-wrapper {
   height: fit-content;
   width: 100%;
   margin-bottom: 30px;
+  background-color: rgba(75, 192, 192, 0.3);
+  border-radius: 5px;
+  padding: 20px;
+}
+.period {
+  &-links {
+    display: flex;
+    margin-bottom: 20px;
+  }
+
+  &-link {
+    padding: 5px 10px;
+
+    background-color: rgba(48, 124, 124, 0.2);
+    border: 1px solid transparent;
+    border-radius: 5px;
+    margin-right: 20px;
+    color: rgba(48, 124, 124, 0.9);
+
+    font-size: 18px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  &-link:hover,
+  &-link-active {
+    background-color: rgba(48, 124, 124, 0.6);
+    border: 1px solid rgba(48, 124, 124, 0.9);
+    color: white;
+  }
 }
 </style>

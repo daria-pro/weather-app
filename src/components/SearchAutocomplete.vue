@@ -1,5 +1,6 @@
 <template>
   <div class="autocomplete">
+    <h1 class="autocomplete-label">Start searching by city name</h1>
     <div class="chip-container">
       <div class="chip" v-for="chip of chips" :key="chip.id">
         <h3 class="chip-title">{{ `${chip.name}, ${chip.sys.country}` }}</h3>
@@ -157,6 +158,13 @@ export default {
   position: relative;
   max-width: 400px;
   width: 100%;
+
+  &-label {
+    margin-bottom: 5px;
+    font-size: 16px;
+    font-weight: 400;
+    color: gray;
+  }
 }
 
 .autocomplete-results {

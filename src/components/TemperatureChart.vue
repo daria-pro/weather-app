@@ -1,6 +1,7 @@
 <template>
-  <h2>
-    Weather forecast for {{ cardSelected.name }}, {{ cardSelected.sys.country }}
+  <h2 class="chart__title">
+    Weather forecast for {{ cardSelected.city.name }},
+    {{ cardSelected.city.country }}
   </h2>
   <div class="chart">
     <canvas ref="weatherChart" width="400" height="400"></canvas>
@@ -56,7 +57,6 @@ export default {
     },
     async createChart() {
       const ctx = this.$refs.weatherChart.getContext("2d");
-
       const currentDate = new Date().toISOString().slice(0, 10);
       const filteredData = this.chartData.filter((entry) =>
         entry.dt_txt.includes(currentDate)
@@ -72,24 +72,10 @@ export default {
             {
               label: "degrees Celcius",
               data: temperatures,
-              backgroundColor: [
-                "rgba(255, 99, 132, 0.2)",
-                "rgba(54, 162, 235, 0.2)",
-                "rgba(255, 206, 86, 0.2)",
-                "rgba(75, 192, 192, 0.2)",
-                "rgba(153, 102, 255, 0.2)",
-                "rgba(255, 159, 64, 0.2)",
-              ],
-              borderColor: [
-                "rgba(255, 99, 132, 1)",
-                "rgba(54, 162, 235, 1)",
-                "rgba(255, 206, 86, 1)",
-                "rgba(75, 192, 192, 1)",
-                "rgba(153, 102, 255, 1)",
-                "rgba(255, 159, 64, 1)",
-              ],
+              backgroundColor: ["rgba(75, 192, 192, 0.2)"],
+              borderColor: ["rgba(75, 192, 192, 1)"],
               borderWidth: 1,
-              barThickness: 90,
+              barThickness: 50,
             },
           ],
         },
@@ -113,10 +99,11 @@ export default {
 
     async fetchChartData(city) {
       if (city) {
-        console.log(city);
-        const cityName = city.name;
-        const countryCode = city.sys.country;
-        this.chartData = await fetchByCityCountry(cityName, countryCode);
+        // console.log(city);
+        // const cityName = city.name;
+        // const countryCode = city.sys.country;
+        // const data = await fetchByCityCountry(cityName, countryCode);
+        // this.chartData = data.list;
       }
     },
   },
@@ -126,5 +113,11 @@ export default {
 <style scoped lang="scss">
 .chart {
   max-width: 700px;
+
+  &__title {
+    font-weight: 300;
+    font-size: 24px;
+    margin: 60px 0 20px;
+  }
 }
 </style>

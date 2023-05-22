@@ -3,8 +3,8 @@ import HomeView from "../views/HomeView.vue";
 import FavoritesView from "../views/FavoritesView.vue";
 
 const routes = [
-  { path: "/", component: HomeView },
-  { path: "/favorites", component: FavoritesView },
+  { path: "/", component: HomeView, name: "home" },
+  { path: "/favorites", component: FavoritesView, name: "favorites" },
 ];
 
 const router = createRouter({

@@ -5,7 +5,7 @@ import {
   weatherForDiagram,
 } from "../includes/chartWeather";
 
-const API_KEY = "";
+const API_KEY = import.meta.env.VITE_API_KEY;
 const BASE_URL = "https://api.openweathermap.org/data/2.5";
 
 export async function searchCities(query) {
@@ -17,6 +17,7 @@ export async function searchCities(query) {
     //     sort: "population",
     //     cnt: 10,
     //     appid: API_KEY,
+    //     units: "metric",
     //   },
     // });
 
@@ -42,12 +43,12 @@ export async function fetchCurrentWeather(cityName, countryCode) {
 
 export async function fetchByCityCountry(cityName, countryCode) {
   try {
-    // const response = await axios.get(
-    //   `${BASE_URL}/forecast?q=${cityName},${countryCode}&units=metric&appid=${API_KEY}`
-    // );
-    // console.log("fetchByCityCountry", response.data);
-    // return response.data.list;
-    return weatherForDiagram.list;
+    const response = await axios.get(
+      `${BASE_URL}/forecast?q=${cityName},${countryCode}&units=metric&appid=${API_KEY}`
+    );
+
+    return response.data;
+    // return weatherForDiagram.list;
   } catch (error) {
     console.error("Error fetching weather data:", error.message);
   }

@@ -1,21 +1,25 @@
 <template>
   <div class="cards-list">
     <city-card
-      v-for="city in data"
+      v-for="city in cardsData ? favorites : data"
       @click="changeChart(city)"
+      @add-favorite="toggleFavorites"
       :key="city.id"
       :city="city"
       :class="{ card__active: isCardSelected(city.id) }"
+      :isFavorite="isFavorite(city.id)"
     />
+    <confirm-dialogue ref="reachedMaxFavLimit" :showOkButton="false" />
   </div>
 </template>
 
 <script>
 import CityCard from "./CityCard.vue";
+import ConfirmDialogue from "./ConfirmDialogue.vue";
 
 export default {
   name: "CardsList",
-  components: { CityCard },
+  components: { CityCard, ConfirmDialogue },
   props: {
     data: {
       type: Array,
@@ -29,6 +33,7 @@ export default {
   data() {
     return {
       cities: [],
+      favorites: [],
     };
   },
 
@@ -37,10 +42,43 @@ export default {
       this.$emit("chart-updated", city);
     },
     isCardSelected(id) {
-      return this.cardSelected.id === id;
+      if (this.cardSelected) {
+        return this.cardSelected.id === id;
+      }
+    },
+    async toggleFavorites(card) {
+      if (this.favorites.some((item) => item.id === card.id)) {
+        this.favorites = this.favorites.filter((item) => item.id !== card.id);
+        this.updateStorageFavorites();
+      } else if (this.favorites.length < 5) {
+        this.favorites.push(card);
+        this.updateStorageFavorites();
+      } else {
+        await this.$refs.reachedMaxFavLimit.show({
+          message:
+            "Maximum number of the favorites is 5. Remove any of them to add another one.",
+          okButton: "Ok",
+        });
+      }
+    },
+    isFavorite(id) {
+      return this.favorites.some((card) => card.id === id);
+    },
+    updateStorageFavorites() {
+      localStorage.setItem("favorites", JSON.stringify(this.favorites));
     },
   },
-  computed: {},
+  mounted() {
+    const storedFavorites = localStorage.getItem("favorites");
+    if (storedFavorites) {
+      this.favorites = JSON.parse(storedFavorites);
+    }
+  },
+  computed: {
+    cardsData() {
+      return this.$route.name === "favorites";
+    },
+  },
 };
 </script>
 
