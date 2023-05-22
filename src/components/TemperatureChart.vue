@@ -67,17 +67,18 @@ export default {
       }
     },
     async createDayChart() {
-      const ctx = this.$refs.weatherChart.getContext("2d");
-
-      const labels = this.filterDayData.map((entry) => entry.dt_txt);
-      const temperatures = this.filterDayData.map((entry) => entry.main.temp);
-      this.chart = new Chart(ctx, this.chartConfig(labels, temperatures));
+      if (this.$refs.weatherChart) {
+        const ctx = this.$refs.weatherChart.getContext("2d");
+        const labels = this.filterDayData.map((entry) => entry.dt_txt);
+        const temperatures = this.filterDayData.map((entry) => entry.main.temp);
+        this.chart = new Chart(ctx, this.chartConfig(labels, temperatures));
+      }
     },
     async createWeekChart() {
       const data = await this.weekData.filter(
         (card) => card.city.id === this.cardSelected.city.id
       );
-      const ctx = this.$refs.weatherChart.getContext("2d");
+      const ctx = this.$refs.weatherChart?.getContext("2d");
       const labels = data[0].list.map((entry) => entry.date);
       const temperatures = data[0].list.map(
         (entry) => entry.averageTemperature
@@ -130,15 +131,22 @@ export default {
       try {
         if (this.chart) {
           await this.chart.destroy();
-
-          this.period === "Day"
-            ? this.fetchDayDataAndCreateChart()
-            : this.createWeekChart();
+          if (this.$refs.weatherChart) {
+            this.period === "Day"
+              ? this.fetchDayDataAndCreateChart()
+              : this.createWeekChart();
+          }
         }
       } catch (error) {
-        console.error("An error occurred:", error);
+        console.log("An error occurred:", error);
       }
     },
+  },
+  beforeRouteLeave(to, from, next) {
+    if (this.chart) {
+      this.chart.destroy;
+      next();
+    }
   },
   computed: {
     filterDayData() {

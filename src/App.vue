@@ -12,7 +12,7 @@
           alt="weather logo"
         />
       </nav>
-      <router-view></router-view>
+      <router-view :period="period" :togglePeriod="togglePeriod"></router-view>
     </div>
   </div>
 </template>
@@ -23,6 +23,16 @@ import HomeView from "./views/HomeView.vue";
 export default {
   components: {
     HomeView,
+  },
+  data() {
+    return {
+      period: "Day",
+    };
+  },
+  methods: {
+    togglePeriod() {
+      return (this.period = this.period === "Day" ? "Week" : "Day");
+    },
   },
 };
 </script>

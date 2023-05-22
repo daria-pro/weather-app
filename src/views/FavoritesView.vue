@@ -1,6 +1,19 @@
 <template>
   <h1 class="favorites__title">Favorites List</h1>
-  <cards-list :data="favorites" />
+  <div v-if="favorites.length" class="cards-list-wrapper">
+    <div class="period-links">
+      <p
+        class="period-link"
+        v-for="link in periodLinks"
+        :key="link"
+        :class="{ 'period-link-active': period === link }"
+        @click="togglePeriod"
+      >
+        {{ link }}
+      </p>
+    </div>
+    <cards-list :data="favorites" :period="period" />
+  </div>
   <p v-if="!favorites.length">No favorites added.</p>
 </template>
 
@@ -9,12 +22,22 @@ import CardsList from "../components/CardsList.vue";
 export default {
   name: "FavoritesView",
   components: { CardsList },
+  props: {
+    period: {
+      type: String,
+    },
+    togglePeriod: {
+      type: Function,
+    },
+  },
   data() {
     return {
       favorites: [],
+      periodLinks: ["Day", "Week"],
+      data: [],
     };
   },
-  mounted() {
+  created() {
     const storedFavorites = localStorage.getItem("favorites");
     if (storedFavorites) {
       this.favorites = JSON.parse(storedFavorites);

@@ -29,7 +29,11 @@
       />
     </div>
     <ul class="autocomplete-results" v-show="isOpen">
-      <li v-if="isLoading" class="loading">Loading results...</li>
+      <img
+        v-if="isLoading"
+        class="preloader"
+        src="../assets/images/preloader.gif"
+      />
       <li
         v-else
         v-for="(item, i) in itemsList"
@@ -52,11 +56,6 @@ export default {
       type: Array,
       required: false,
       default: () => [],
-    },
-    isAsync: {
-      type: Boolean,
-      required: true,
-      default: false,
     },
     set: {
       type: Boolean,
@@ -87,12 +86,9 @@ export default {
   },
   watch: {
     items: function (value, oldValue) {
-      if (this.isAsync) {
-        this.itemsList = value;
-        this.isOpen = true;
-        this.isLoading = false;
-      }
+      this.itemsList = value;
       this.isOpen = true;
+      this.isLoading = false;
     },
   },
   methods: {
@@ -108,10 +104,7 @@ export default {
         this.$emit("input", this.inputValue);
         this.isOpen = true;
       }, this.delayDuration);
-
-      // if (this.isAsync) {
-      //   this.isLoading = true;
-      // }
+      this.isLoading = true;
       this.filterResults();
       this.isOpen = true;
     },
@@ -180,14 +173,15 @@ export default {
 .autocomplete-result {
   list-style: none;
   text-align: left;
-  padding: 4px 2px;
+  padding: 5px 5px 5px 7px;
+  font-size: 17px;
   cursor: pointer;
 }
 
 .autocomplete-result.is-active,
 .autocomplete-result:hover {
-  background-color: #4aae9b;
-  color: white;
+  background-color: rgba(75, 192, 192, 0.3);
+  color: black;
 }
 
 .chip-container {
@@ -202,14 +196,15 @@ export default {
 
   .chip {
     margin: 4px;
-    background: #e0e0e0;
+    background: rgba(48, 124, 124, 0.2);
     padding: 0 5px;
-    border: 1px solid #ccc;
+    border: 1px solid rgba(48, 124, 124, 0.9);
     border-radius: 3px;
     display: flex;
     align-items: center;
     line-height: 17px;
     font-size: 17px;
+    color: rgba(48, 124, 124, 0.9);
   }
   input {
     flex: 1 1 auto;
@@ -224,12 +219,19 @@ export default {
   .clear-icon {
     margin-left: 5px;
     font-weight: 700;
-    color: gray;
+    color: rgb(58, 58, 58);
     cursor: pointer;
 
     &:hover {
-      color: black;
+      color: rgba(48, 124, 124, 0.9);
     }
   }
+}
+</style>
+<style>
+.preloader {
+  max-width: 80px;
+  display: block;
+  margin: 0 auto;
 }
 </style>

@@ -2,7 +2,6 @@
   <div class="input-wrapper">
     <search-autocomplete
       :items="citiesList"
-      :isAsync="true"
       @input="handleCitiesFetch"
       @value-updated="handleCitySelect"
       :chips="chips"
@@ -24,7 +23,7 @@
       </p>
     </div>
     <cards-list
-      :data="weekData"
+      :data="cardsData"
       @chart-updated="handleChartUpdate"
       :cardSelected="cardSelected"
       :period="period"
@@ -35,7 +34,7 @@
     v-if="cardSelected"
     :cardSelected="cardSelected"
     :period="period"
-    :weekData="weekData"
+    :weekData="cardsData"
   />
 
   <confirm-dialogue ref="confirmDialogue" :showOkButton="true" />
@@ -53,7 +52,6 @@ import SearchAutocomplete from "../components/SearchAutocomplete.vue";
 import TemperatureChart from "../components/TemperatureChart.vue";
 import CardsList from "../components/CardsList.vue";
 import ConfirmDialogue from "../components/ConfirmDialogue.vue";
-import { cardsData } from "../includes/chartWeather";
 
 export default {
   name: "HomeView",
@@ -63,6 +61,14 @@ export default {
     CardsList,
     ConfirmDialogue,
   },
+  props: {
+    period: {
+      type: String,
+    },
+    togglePeriod: {
+      type: Function,
+    },
+  },
   data() {
     return {
       citiesList: [],
@@ -70,11 +76,9 @@ export default {
       selectedValue: "",
       chips: [],
       cardsData: [],
-      weekData: [],
       averagedDataWeek: [],
       cardSelected: null,
       periodLinks: ["Day", "Week"],
-      period: "Day",
       ipInfo: {
         city: "",
         countryCode: "",
@@ -85,7 +89,6 @@ export default {
     async fetchCities(inputValue) {
       try {
         this.citiesList = await searchCities(inputValue);
-        console.log("citiesList", this.citiesList);
       } catch (error) {
         console.error("Error fetching countries:", error);
       }
@@ -95,6 +98,7 @@ export default {
       this.citiesList = [];
     },
     async handleCitySelect(value) {
+      if (this.cardsData.length >= 5) return;
       this.selectedValue = value;
       const cityName = this.selectedValue.name;
       const countryCode = this.selectedValue.sys.country;
@@ -102,8 +106,7 @@ export default {
         cityName,
         countryCode
       );
-      this.cardsData.push(currentCityWeather);
-      this.getWeekData();
+      this.cardsData.push(this.formattedCard(currentCityWeather));
       this.updateStorageDefaultList();
     },
     handleCitiesFetch(newVal) {
@@ -132,15 +135,13 @@ export default {
       });
       if (ok) {
         this.chips = this.chips.filter((chip) => chip.id !== id);
-        console.log(this.weekData);
-        this.weekData = this.weekData.filter((card) => card.city.id !== id);
+        this.cardsData = this.cardsData.filter((card) => card.city.id !== id);
+        this.updateStorageDefaultList();
       } else {
         return;
       }
     },
-    togglePeriod() {
-      return (this.period = this.period === "Day" ? "Week" : "Day");
-    },
+
     calculateAverageTemperature(list) {
       const result = [];
       const dates = {};
@@ -180,31 +181,17 @@ export default {
       return result;
     },
     updateStorageDefaultList() {
-      localStorage.setItem("defaultList", JSON.stringify(this.weekData));
-    },
-    getWeekData() {
-      const clonedData = JSON.parse(JSON.stringify(this.cardsData));
-      const weekData = clonedData.map((obj) => {
-        return {
-          ...obj,
-          list: this.calculateAverageTemperature(obj.list),
-        };
-      });
-
-      this.weekData = weekData;
+      localStorage.setItem("defaultList", JSON.stringify(this.cardsData));
     },
     async getIpInfo() {
       const data = await fetchGeolocationData();
-      console.log("data", data);
       this.ipInfo.city = data.city;
       this.ipInfo.countryCode = data.countryCode;
       const cityWeatherByIp = await fetchByCityCountry(
         this.ipInfo.city,
         this.ipInfo.countryCode
       );
-      console.log("cityWeatherByIp", cityWeatherByIp);
-      this.cardsData.push(cityWeatherByIp);
-      this.getWeekData();
+      this.cardsData.push(this.formattedCard(cityWeatherByIp));
       this.updateStorageDefaultList();
       this.chips.push({
         id: cityWeatherByIp.city.id,
@@ -213,15 +200,16 @@ export default {
       });
       this.cardSelected = this.cardsData[0];
     },
+    formattedCard(card) {
+      return { ...card, list: this.calculateAverageTemperature(card.list) };
+    },
   },
-  computed: {},
-  mounted() {},
+
   created() {
-    console.log("hi", this.weekData);
     const storedDefaultList = localStorage.getItem("defaultList");
     if (storedDefaultList) {
       const defaultList = JSON.parse(storedDefaultList);
-      this.weekData = defaultList;
+      this.cardsData = defaultList;
       this.chips = defaultList.map((city) => {
         return {
           id: city.city.id,
@@ -229,7 +217,7 @@ export default {
           sys: { country: city.city.country },
         };
       });
-      this.cardSelected = this.weekData[0];
+      this.cardSelected = this.cardsData[0];
     } else {
       this.getIpInfo();
     }
@@ -237,10 +225,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-.input-wrapper {
-  margin-bottom: 20px;
-}
+<style lang="scss">
 .cards-list-wrapper {
   height: fit-content;
   width: 100%;
@@ -279,5 +264,10 @@ export default {
     border: 1px solid rgba(48, 124, 124, 0.9);
     color: white;
   }
+}
+</style>
+<style lang="scss" scoped>
+.input-wrapper {
+  margin-bottom: 20px;
 }
 </style>

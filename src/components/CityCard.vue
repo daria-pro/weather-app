@@ -13,13 +13,6 @@
         alt="heart icon"
       />
     </div>
-    <!-- <h3 class="card__subtitle">
-      {{ city.weather.main
-      }}<span
-        >Wind {{ city.wind.speed.toFixed(0) }}km/h
-        <span class="dot">•</span> Humidity {{ city.main.humidity }}%</span
-      >
-    </h3> -->
     <div class="card__temperature-wrapper">
       <div class="card__icon-part-wrapper">
         <img
@@ -31,10 +24,6 @@
           Humidity: {{ city.list[0].humidity }}% <br />
           Wind: {{ city.list[0].wind }}km/h
         </p>
-        <!-- <p class="card__paragraph">
-          Min: {{ city.main.temp_min.toFixed(0) }}° <br />
-          Max: {{ city.main.temp_max.toFixed(0) }}°
-        </p> -->
       </div>
 
       <h2 class="card__temperature">{{ city.list[0].averageTemperature }}°</h2>
@@ -83,22 +72,6 @@ export default {
     addToFavorites(card) {
       this.$emit("add-favorite", card);
     },
-    // getPropertyValue(obj, propertyPath) {
-    //   const properties = propertyPath.split(".");
-    //   let value = obj;
-    //   for (const property of properties) {
-    //     value = value[property];
-    //   }
-    //   return value;
-    // },
-    // averageNumber(propertyPath) {
-    //   const values = this.filterListByToday.map((obj) =>
-    //     this.getPropertyValue(obj, propertyPath)
-    //   );
-    //   const averageValue =
-    //     values.reduce((sum, temp) => sum + temp, 0) / values.length;
-    //   return averageValue.toFixed(0);
-    // },
   },
   computed: {
     filterListByToday() {
@@ -124,7 +97,6 @@ body {
   display: flex;
   flex-direction: column;
   padding: 20px;
-  // max-width: 350px;
   width: 100%;
   height: fit-content;
   border-radius: 3px;
