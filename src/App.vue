@@ -35,7 +35,7 @@ export default {
     margin: 0 auto;
 
     @include onMobile {
-      padding: 0 20px;
+      padding: 0 10px;
     }
   }
 }

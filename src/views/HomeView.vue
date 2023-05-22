@@ -24,16 +24,20 @@
       </p>
     </div>
     <cards-list
-      :data="cardsData"
+      :data="weekData"
       @chart-updated="handleChartUpdate"
       :cardSelected="cardSelected"
+      :period="period"
     />
   </div>
-  <!-- <div v-if="weatherData"> -->
-  <!-- <h2>{{ weatherData.city.name }}</h2> -->
-  <temperature-chart :cardSelected="cardSelected" />
 
-  <!-- </div> -->
+  <temperature-chart
+    v-if="cardSelected"
+    :cardSelected="cardSelected"
+    :period="period"
+    :weekData="weekData"
+  />
+
   <confirm-dialogue ref="confirmDialogue" :showOkButton="true" />
   <confirm-dialogue ref="reachedMaxLimit" :showOkButton="false" />
 </template>
@@ -43,6 +47,7 @@ import {
   searchCities,
   fetchCurrentWeather,
   fetchByCityCountry,
+  fetchGeolocationData,
 } from "../api/weatherApi";
 import SearchAutocomplete from "../components/SearchAutocomplete.vue";
 import TemperatureChart from "../components/TemperatureChart.vue";
@@ -64,18 +69,23 @@ export default {
       weatherData: null,
       selectedValue: "",
       chips: [],
-      cardsData: cardsData,
-      cardSelected: cardsData[0],
-      updateChart: false,
+      cardsData: [],
+      weekData: [],
+      averagedDataWeek: [],
+      cardSelected: null,
       periodLinks: ["Day", "Week"],
       period: "Day",
+      ipInfo: {
+        city: "",
+        countryCode: "",
+      },
     };
   },
   methods: {
     async fetchCities(inputValue) {
       try {
         this.citiesList = await searchCities(inputValue);
-        // console.log("cityList", this.citiesList);
+        console.log("citiesList", this.citiesList);
       } catch (error) {
         console.error("Error fetching countries:", error);
       }
@@ -88,19 +98,16 @@ export default {
       this.selectedValue = value;
       const cityName = this.selectedValue.name;
       const countryCode = this.selectedValue.sys.country;
-      if (this.period === "Day") {
-        const currentCityWeather = await fetchByCityCountry(
-          cityName,
-          countryCode
-        );
-        console.log("handleCitySelect fetchFore5", currentCityWeather);
-        this.cardsData.push(currentCityWeather);
-      }
-      // fetchByCityCountry(cityName, countryCode);
+      const currentCityWeather = await fetchByCityCountry(
+        cityName,
+        countryCode
+      );
+      this.cardsData.push(currentCityWeather);
+      this.getWeekData();
+      this.updateStorageDefaultList();
     },
     handleCitiesFetch(newVal) {
       if (newVal && newVal.length) {
-        // console.log("input", newVal);
         this.fetchCities(newVal);
       }
     },
@@ -125,7 +132,8 @@ export default {
       });
       if (ok) {
         this.chips = this.chips.filter((chip) => chip.id !== id);
-        this.cardsData = this.cardsData.filter((card) => card.id !== id);
+        console.log(this.weekData);
+        this.weekData = this.weekData.filter((card) => card.city.id !== id);
       } else {
         return;
       }
@@ -133,9 +141,98 @@ export default {
     togglePeriod() {
       return (this.period = this.period === "Day" ? "Week" : "Day");
     },
+    calculateAverageTemperature(list) {
+      const result = [];
+      const dates = {};
+
+      for (const item of list) {
+        const date = item.dt_txt.split(" ")[0];
+
+        const newDate = new Date(date);
+        const options = { weekday: "long" };
+
+        if (!dates[date]) {
+          dates[date] = {
+            date: date,
+            temperatures: [item.main.temp],
+            icon: item.weather[0].icon,
+            weekDay: newDate
+              .toLocaleDateString("en-US", options)
+              .substr(0, 3)
+              .toUpperCase(),
+            humidity: item.main.humidity,
+            wind: item.wind.speed.toFixed(0),
+          };
+        } else {
+          dates[date].temperatures.push(item.main.temp);
+        }
+      }
+
+      for (const date in dates) {
+        const temperatures = dates[date].temperatures;
+        const averageTemperature =
+          temperatures.reduce((sum, temp) => sum + temp, 0) /
+          temperatures.length;
+        dates[date].averageTemperature = averageTemperature.toFixed(0);
+        result.push(dates[date]);
+      }
+
+      return result;
+    },
+    updateStorageDefaultList() {
+      localStorage.setItem("defaultList", JSON.stringify(this.weekData));
+    },
+    getWeekData() {
+      const clonedData = JSON.parse(JSON.stringify(this.cardsData));
+      const weekData = clonedData.map((obj) => {
+        return {
+          ...obj,
+          list: this.calculateAverageTemperature(obj.list),
+        };
+      });
+
+      this.weekData = weekData;
+    },
+    async getIpInfo() {
+      const data = await fetchGeolocationData();
+      console.log("data", data);
+      this.ipInfo.city = data.city;
+      this.ipInfo.countryCode = data.countryCode;
+      const cityWeatherByIp = await fetchByCityCountry(
+        this.ipInfo.city,
+        this.ipInfo.countryCode
+      );
+      console.log("cityWeatherByIp", cityWeatherByIp);
+      this.cardsData.push(cityWeatherByIp);
+      this.getWeekData();
+      this.updateStorageDefaultList();
+      this.chips.push({
+        id: cityWeatherByIp.city.id,
+        name: cityWeatherByIp.city.name,
+        sys: { country: cityWeatherByIp.city.country },
+      });
+      this.cardSelected = this.cardsData[0];
+    },
   },
+  computed: {},
+  mounted() {},
   created() {
-    // this.fetchWeatherData();
+    console.log("hi", this.weekData);
+    const storedDefaultList = localStorage.getItem("defaultList");
+    if (storedDefaultList) {
+      const defaultList = JSON.parse(storedDefaultList);
+      this.weekData = defaultList;
+      this.chips = defaultList.map((city) => {
+        return {
+          id: city.city.id,
+          name: city.city.name,
+          sys: { country: city.city.country },
+        };
+      });
+      this.cardSelected = this.weekData[0];
+    } else {
+      this.getIpInfo();
+    }
   },
 };
 </script>
@@ -151,6 +248,10 @@ export default {
   background-color: rgba(75, 192, 192, 0.3);
   border-radius: 5px;
   padding: 20px;
+
+  @include onMobile {
+    padding: 10px;
+  }
 }
 .period {
   &-links {

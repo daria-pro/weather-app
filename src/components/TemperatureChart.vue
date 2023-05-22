@@ -19,6 +19,14 @@ export default {
       type: Object,
       default: null,
     },
+    weekData: {
+      type: Array,
+      default: () => [],
+    },
+    period: {
+      type: String,
+      default: "Day",
+    },
   },
   data() {
     return {
@@ -30,7 +38,11 @@ export default {
     if (this.chart) {
       this.chart.destroy();
     }
-    this.fetchChartDataAndCreateChart();
+    if (this.period === "Day") {
+      this.fetchDayDataAndCreateChart();
+    } else {
+      this.createWeekChart();
+    }
   },
   beforeUnmount() {
     if (this.chart) {
@@ -39,35 +51,58 @@ export default {
   },
   watch: {
     cardSelected: {
-      async handler(newCity) {
-        if (this.chart) {
-          await this.chart.destroy();
-          this.fetchChartDataAndCreateChart();
-        }
-      },
+      handler: "handleWatchedVariables",
+      immediate: true,
+    },
+    period: {
+      handler: "handleWatchedVariables",
       immediate: true,
     },
   },
   methods: {
-    async fetchChartDataAndCreateChart() {
+    async fetchDayDataAndCreateChart() {
       if (this.cardSelected) {
         await this.fetchChartData(this.cardSelected);
-        this.createChart();
+        this.createDayChart();
       }
     },
-    async createChart() {
+    async createDayChart() {
       const ctx = this.$refs.weatherChart.getContext("2d");
-      const currentDate = new Date().toISOString().slice(0, 10);
-      const filteredData = this.chartData.filter((entry) =>
-        entry.dt_txt.includes(currentDate)
-      );
 
-      const labels = filteredData.map((entry) => entry.dt_txt);
-      const temperatures = filteredData.map((entry) => entry.main.temp);
-      this.chart = new Chart(ctx, {
+      const labels = this.filterDayData.map((entry) => entry.dt_txt);
+      const temperatures = this.filterDayData.map((entry) => entry.main.temp);
+      this.chart = new Chart(ctx, this.chartConfig(labels, temperatures));
+    },
+    async createWeekChart() {
+      const data = await this.weekData.filter(
+        (card) => card.city.id === this.cardSelected.city.id
+      );
+      const ctx = this.$refs.weatherChart.getContext("2d");
+      const labels = data[0].list.map((entry) => entry.date);
+      const temperatures = data[0].list.map(
+        (entry) => entry.averageTemperature
+      );
+      this.chart = new Chart(ctx, this.chartConfig(labels, temperatures));
+    },
+    destroyChart() {
+      if (this.chart != null) {
+        this.chart.destroy();
+      }
+    },
+
+    async fetchChartData(city) {
+      if (city) {
+        const cityName = city.city.name;
+        const countryCode = city.city.country;
+        const data = await fetchByCityCountry(cityName, countryCode);
+        this.chartData = data.list;
+      }
+    },
+    chartConfig(labels, temperatures) {
+      return {
         type: "bar",
         data: {
-          labels,
+          labels: labels,
           datasets: [
             {
               label: "degrees Celcius",
@@ -75,7 +110,7 @@ export default {
               backgroundColor: ["rgba(75, 192, 192, 0.2)"],
               borderColor: ["rgba(75, 192, 192, 1)"],
               borderWidth: 1,
-              barThickness: 50,
+              barThickness: 40,
             },
           ],
         },
@@ -89,22 +124,29 @@ export default {
             },
           },
         },
-      });
+      };
     },
-    destroyChart() {
-      if (this.chart != null) {
-        this.chart.destroy();
-      }
-    },
+    async handleWatchedVariables() {
+      try {
+        if (this.chart) {
+          await this.chart.destroy();
 
-    async fetchChartData(city) {
-      if (city) {
-        // console.log(city);
-        // const cityName = city.name;
-        // const countryCode = city.sys.country;
-        // const data = await fetchByCityCountry(cityName, countryCode);
-        // this.chartData = data.list;
+          this.period === "Day"
+            ? this.fetchDayDataAndCreateChart()
+            : this.createWeekChart();
+        }
+      } catch (error) {
+        console.error("An error occurred:", error);
       }
+    },
+  },
+  computed: {
+    filterDayData() {
+      const currentDate = new Date().toISOString().slice(0, 10);
+      const filteredData = this.chartData.filter((entry) =>
+        entry.dt_txt.includes(currentDate)
+      );
+      return filteredData;
     },
   },
 };

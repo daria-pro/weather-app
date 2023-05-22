@@ -1,6 +1,7 @@
 <template>
   <h1 class="favorites__title">Favorites List</h1>
   <cards-list :data="favorites" />
+  <p v-if="!favorites.length">No favorites added.</p>
 </template>
 
 <script>

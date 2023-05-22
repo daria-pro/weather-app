@@ -24,21 +24,41 @@
       <div class="card__icon-part-wrapper">
         <img
           class="weather-icon"
-          :src="`https://openweathermap.org/img/wn/${city.list[0].weather[0].icon}@2x.png`"
+          :src="`https://openweathermap.org/img/wn/${city.list[0].icon}@2x.png`"
           alt="weather icon"
         />
-        <!-- <p class="card__paragraph">
-          Feels like: {{ city.main.feels_like.toFixed(0) }}°
-        </p> -->
+        <p class="card__paragraph">
+          Humidity: {{ city.list[0].humidity }}% <br />
+          Wind: {{ city.list[0].wind }}km/h
+        </p>
         <!-- <p class="card__paragraph">
           Min: {{ city.main.temp_min.toFixed(0) }}° <br />
           Max: {{ city.main.temp_max.toFixed(0) }}°
         </p> -->
       </div>
 
-      <h2 class="card__temperature">{{ averageNumber("main.temp") }}°</h2>
+      <h2 class="card__temperature">{{ city.list[0].averageTemperature }}°</h2>
     </div>
-    <div></div>
+
+    <table v-if="period !== 'Day'">
+      <tr>
+        <td v-for="day in city.list" :key="day.date">{{ day.weekDay }}</td>
+      </tr>
+      <tr>
+        <td v-for="day in city.list" :key="day.date">
+          {{ day.averageTemperature }}°
+        </td>
+      </tr>
+      <tr>
+        <td v-for="day in city.list" :key="day.date">
+          <img
+            class="weather-icon-small"
+            :src="`https://openweathermap.org/img/wn/${day.icon}@2x.png`"
+            alt="weather icon"
+          />
+        </td>
+      </tr>
+    </table>
   </div>
 </template>
 
@@ -54,27 +74,31 @@ export default {
       type: Boolean,
       default: false,
     },
+    period: {
+      type: String,
+      default: "Day",
+    },
   },
   methods: {
     addToFavorites(card) {
       this.$emit("add-favorite", card);
     },
-    getPropertyValue(obj, propertyPath) {
-      const properties = propertyPath.split(".");
-      let value = obj;
-      for (const property of properties) {
-        value = value[property];
-      }
-      return value;
-    },
-    averageNumber(propertyPath) {
-      const values = this.filterListByToday.map((obj) =>
-        this.getPropertyValue(obj, propertyPath)
-      );
-      const averageValue =
-        values.reduce((sum, temp) => sum + temp, 0) / values.length;
-      return averageValue.toFixed(0);
-    },
+    // getPropertyValue(obj, propertyPath) {
+    //   const properties = propertyPath.split(".");
+    //   let value = obj;
+    //   for (const property of properties) {
+    //     value = value[property];
+    //   }
+    //   return value;
+    // },
+    // averageNumber(propertyPath) {
+    //   const values = this.filterListByToday.map((obj) =>
+    //     this.getPropertyValue(obj, propertyPath)
+    //   );
+    //   const averageValue =
+    //     values.reduce((sum, temp) => sum + temp, 0) / values.length;
+    //   return averageValue.toFixed(0);
+    // },
   },
   computed: {
     filterListByToday() {
@@ -99,8 +123,8 @@ body {
 .card {
   display: flex;
   flex-direction: column;
-  padding: 20px 30px;
-  max-width: 400px;
+  padding: 20px;
+  // max-width: 350px;
   width: 100%;
   height: fit-content;
   border-radius: 3px;
@@ -123,7 +147,7 @@ body {
 
   &__title {
     font-weight: 300;
-    font-size: 2.26em;
+    font-size: 30px;
     margin: 0 0 10px;
     -webkit-animation: open 0.5s cubic-bezier(0.39, 0, 0.38, 1);
   }
@@ -155,20 +179,21 @@ body {
   &__temperature-wrapper {
     display: flex;
     align-items: flex-start;
+    margin-bottom: 20px;
   }
 
   &__temperature {
     float: right;
     color: #666;
     font-weight: 300;
-    font-size: 5.5em;
+    font-size: 66px;
     line-height: 1.1;
     margin: 0;
     -webkit-animation: open 0.5s cubic-bezier(0.39, 0, 0.38, 1) 0.2s;
   }
   &__icon-part-wrapper {
     display: flex;
-    flex-direction: column;
+    align-items: center;
     width: 200px;
   }
 }
@@ -207,8 +232,17 @@ span span {
   position: relative;
   width: 70px;
   height: 70px;
-  margin-right: 15px;
   -webkit-animation: open 0.5s cubic-bezier(0.39, 0, 0.38, 1) 0.2s;
+
+  &-small {
+    width: 50px;
+    height: 50px;
+
+    @include onMobile {
+      width: 40px;
+      height: 40px;
+    }
+  }
 }
 
 @-webkit-keyframes open {
@@ -226,5 +260,52 @@ span span {
   100% {
     opacity: 1;
   }
+}
+
+table {
+  position: relative;
+  top: 10px;
+  width: 100%;
+  text-align: center;
+
+  @include onTablet {
+    font-size: 15px;
+  }
+}
+
+tr:nth-child(1) td:nth-child(1),
+tr:nth-child(1) td:nth-child(2),
+tr:nth-child(1) td:nth-child(3),
+tr:nth-child(1) td:nth-child(4),
+tr:nth-child(1) td:nth-child(5) {
+  padding-bottom: 14px;
+  -webkit-animation: up 2s cubic-bezier(0.39, 0, 0.38, 1) 0.7s;
+}
+
+tr:nth-child(2) td:nth-child(1),
+tr:nth-child(2) td:nth-child(2),
+tr:nth-child(2) td:nth-child(3),
+tr:nth-child(2) td:nth-child(4),
+tr:nth-child(2) td:nth-child(5) {
+  padding-bottom: 7px;
+  -webkit-animation: up 2s cubic-bezier(0.39, 0, 0.38, 1) 0.9s;
+}
+
+tr:nth-child(3) td:nth-child(1),
+tr:nth-child(3) td:nth-child(2),
+tr:nth-child(3) td:nth-child(3),
+tr:nth-child(3) td:nth-child(4),
+tr:nth-child(3) td:nth-child(5) {
+  padding-bottom: 7px;
+  -webkit-animation: up 2s cubic-bezier(0.39, 0, 0.38, 1) 0.9s;
+}
+
+tr:nth-child(2),
+tr:nth-child(3) {
+  font-size: 0.9em;
+}
+
+tr:nth-child(3) {
+  color: #999;
 }
 </style>

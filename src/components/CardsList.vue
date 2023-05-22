@@ -4,10 +4,11 @@
       v-for="city in cardsData ? favorites : data"
       @click="changeChart(city)"
       @add-favorite="toggleFavorites"
-      :key="city.id"
+      :key="city.city.id"
       :city="city"
-      :class="{ card__active: isCardSelected(city.id) }"
-      :isFavorite="isFavorite(city.id)"
+      :class="{ card__active: isCardSelected(city.city.id) }"
+      :isFavorite="isFavorite(city.city.id)"
+      :period="period"
     />
     <confirm-dialogue ref="reachedMaxFavLimit" :showOkButton="false" />
   </div>
@@ -29,6 +30,10 @@ export default {
       type: Object,
       default: null,
     },
+    period: {
+      type: String,
+      default: "Day",
+    },
   },
   data() {
     return {
@@ -43,12 +48,14 @@ export default {
     },
     isCardSelected(id) {
       if (this.cardSelected) {
-        return this.cardSelected.id === id;
+        return this.cardSelected.city.id === id;
       }
     },
     async toggleFavorites(card) {
-      if (this.favorites.some((item) => item.id === card.id)) {
-        this.favorites = this.favorites.filter((item) => item.id !== card.id);
+      if (this.favorites.some((item) => item.city.id === card.city.id)) {
+        this.favorites = this.favorites.filter(
+          (item) => item.city.id !== card.city.id
+        );
         this.updateStorageFavorites();
       } else if (this.favorites.length < 5) {
         this.favorites.push(card);
@@ -62,7 +69,7 @@ export default {
       }
     },
     isFavorite(id) {
-      return this.favorites.some((card) => card.id === id);
+      return this.favorites.some((card) => card.city.id === id);
     },
     updateStorageFavorites() {
       localStorage.setItem("favorites", JSON.stringify(this.favorites));
@@ -85,14 +92,14 @@ export default {
 <style scoped lang="scss">
 .cards-list {
   display: grid;
-  grid-template-columns: minmax(280px, 400px) minmax(280px, 400px) minmax(
-      280px,
-      400px
+  grid-template-columns: minmax(350px, 1fr) minmax(350px, 1fr) minmax(
+      350px,
+      1fr
     );
   gap: 20px;
 
   @include onTablet {
-    grid-template-columns: minmax(300px, 400px) minmax(300px, 400px);
+    grid-template-columns: minmax(340px, 400px) minmax(330px, 400px);
   }
 
   @include onMobile {
