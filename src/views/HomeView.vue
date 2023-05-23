@@ -210,17 +210,19 @@ export default {
     let defaultList;
     if (storedDefaultList) {
       defaultList = JSON.parse(storedDefaultList);
-    }
-    if (defaultList.length) {
-      this.cardsData = defaultList;
-      this.chips = defaultList.map((city) => {
-        return {
-          id: city.city.id,
-          name: city.city.name,
-          sys: { country: city.city.country },
-        };
-      });
-      this.cardSelected = this.cardsData[0];
+      if (defaultList.length) {
+        this.cardsData = defaultList;
+        this.chips = defaultList.map((city) => {
+          return {
+            id: city.city.id,
+            name: city.city.name,
+            sys: { country: city.city.country },
+          };
+        });
+        this.cardSelected = this.cardsData[0];
+      } else {
+        this.getIpInfo();
+      }
     } else {
       this.getIpInfo();
     }
