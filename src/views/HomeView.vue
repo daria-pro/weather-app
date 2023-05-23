@@ -99,6 +99,7 @@ export default {
     },
     async handleCitySelect(value) {
       if (this.cardsData.length >= 5) return;
+      if (this.cardsData.some((card) => card.city.id === value.id)) return;
       this.selectedValue = value;
       const cityName = this.selectedValue.name;
       const countryCode = this.selectedValue.sys.country;
@@ -118,14 +119,19 @@ export default {
       this.cardSelected = city;
     },
     async handleAddChip(result) {
-      if (this.chips.length < 5) {
-        this.chips.push(result);
-      } else {
+      if (this.chips.some((item) => item.id === result.id)) {
+        await this.$refs.reachedMaxLimit.show({
+          message: "The weather card already exists.",
+          okButton: "Ok",
+        });
+      } else if (this.chips.length >= 5) {
         await this.$refs.reachedMaxLimit.show({
           message:
             "Maximum number of the cards is 5. Remove any of them to add another one.",
           okButton: "Ok",
         });
+      } else {
+        this.chips.push(result);
       }
     },
     async handleDeleteChip(id) {
