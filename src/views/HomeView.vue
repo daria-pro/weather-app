@@ -108,6 +108,7 @@ export default {
         countryCode
       );
       this.cardsData.push(this.formattedCard(currentCityWeather));
+      this.cardSelected = this.cardsData[0];
       this.updateStorageDefaultList();
     },
     handleCitiesFetch(newVal) {
@@ -142,6 +143,7 @@ export default {
       if (ok) {
         this.chips = this.chips.filter((chip) => chip.id !== id);
         this.cardsData = this.cardsData.filter((card) => card.city.id !== id);
+        this.cardSelected = this.cardsData[0];
         this.updateStorageDefaultList();
       } else {
         return;
