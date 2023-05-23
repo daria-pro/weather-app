@@ -1,5 +1,5 @@
 import { createApp } from "vue";
-import "./assets/reset.scss";
+import "./scss/reset.scss";
 import App from "./App.vue";
 import router from "./router";
 

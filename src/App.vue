@@ -8,7 +8,7 @@
         </div>
         <img
           class="nav__logo"
-          src="./assets/images/logo.gif"
+          src="/assets/images/logo.gif"
           alt="weather logo"
         />
       </nav>

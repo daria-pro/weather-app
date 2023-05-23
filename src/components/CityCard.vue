@@ -6,7 +6,7 @@
       </h2>
       <img
         @click.stop="addToFavorites(city)"
-        :src="`../assets/images/heart-${isFavorite ? 'filled' : 'empty'}.png`"
+        :src="`/assets/images/heart-${isFavorite ? 'filled' : 'empty'}.png`"
         class="card__heart"
         alt="heart icon"
       />

@@ -1,6 +1,7 @@
 import axios from "axios";
 
 const API_KEY = import.meta.env.VITE_API_KEY;
+const IP_API_KEY = import.meta.env.VITE_IP_API_KEY;
 const BASE_URL = "https://api.openweathermap.org/data/2.5";
 
 export async function searchCities(query) {
@@ -47,7 +48,7 @@ export async function fetchByCityCountry(cityName, countryCode) {
 
 export async function fetchGeolocationData() {
   try {
-    const ipApiUrl = "http://ip-api.com/json";
+    const ipApiUrl = `https://api.ipgeolocation.io/ipgeo?apiKey=${IP_API_KEY}`;
     const response = await axios.get(ipApiUrl);
     return response.data;
   } catch (error) {

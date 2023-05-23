@@ -32,7 +32,7 @@
       <img
         v-if="isLoading"
         class="preloader"
-        src="../assets/images/preloader.gif"
+        src="/assets/images/preloader.gif"
       />
       <li
         v-else

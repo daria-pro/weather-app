@@ -186,7 +186,7 @@ export default {
     async getIpInfo() {
       const data = await fetchGeolocationData();
       this.ipInfo.city = data.city;
-      this.ipInfo.countryCode = data.countryCode;
+      this.ipInfo.countryCode = data.country_code2;
       const cityWeatherByIp = await fetchByCityCountry(
         this.ipInfo.city,
         this.ipInfo.countryCode
